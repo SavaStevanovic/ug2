@@ -54,7 +54,7 @@ def extractSeqFrames(sequence, annotations, framesOrigin, outputFolder):
 	cmd = ''
 	for frame in range(start_frame, end_frame+1):
 		src = os.path.join(framesOrigin, str(frame) + '.png')
-		cmd += 'copy "{0}" "{1}";\n'.format(src, outputFolder)
+		cmd += 'cp "{0}" "{1}";\n'.format(src, outputFolder)
 
 	parentDir = os.path.abspath(os.path.join(outputFolder, os.pardir))
 	annFileLoc = os.path.join(parentDir, '{0}.txt'.format(os.path.basename(outputFolder)))
