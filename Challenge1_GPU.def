@@ -1,0 +1,53 @@
+Bootstrap: docker
+From: nvidia/cuda:8.0-cudnn5-devel-ubuntu16.04
+
+%post
+
+	################################################
+	##                                            ##
+	## Post setup, runs when you build the image  ##
+	##			Set up for your algorithms        ##
+	## 		  (add or remove libraries HERE)      ##
+	##                                            ##
+	################################################
+
+	# Here are some base python libraries that are installed.
+	# Feel free to add and remove any as needed.
+	apt-get -y update
+	apt-get -y install python
+	apt-get -y install python-pip
+	apt-get -y install python-opencv
+	apt-get -y install nano
+
+%runscript
+	# Executes when the "singularity run" command is used
+
+	##
+	## The code for >>all<< your algorithms should be executed here
+	##
+
+	# Keep in mind that the input/ and output/ folders will be inside the /home/ directory
+	
+	cd /home/
+
+	# Example code: 
+	# Reads the images in /home/input/
+	# 	processes them with three "novel" algorithms, and
+	# 	saves the results of each of these algorithms in /home/output/[alg0, alg1, alg2]
+	python copy_files.py 
+
+%files
+	##
+	## Files to be transfered from your machine to the image
+	## Any file necessary to execute your code (with the exception of the input images)
+	## >>>SHOULD<<< be transferred to the image
+	##
+
+	# Usage:
+	# yourfile /location/inside/image
+
+	# Example code
+	copy_files.py /home/
+
+%test
+	# Test script to verify that the image is built and running correctly
