@@ -4,3 +4,5 @@ tensorflow-gpu
 keras
 IPython
 scikit-image
+opencv-python
+sklearn
