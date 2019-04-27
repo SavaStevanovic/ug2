@@ -1,2 +1,6 @@
 /UG2 Dataset
 .vscode/settings.json
+data
+summary
+__pycache__/
+.vscode

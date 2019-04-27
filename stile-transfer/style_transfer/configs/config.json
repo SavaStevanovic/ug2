@@ -1,12 +1,19 @@
 {
-  "train_data_path": "./data/train/images/",
-  "validation_data_path": "./data/validation/images/",
-  "learning_rate": 0.01,
-  "batch_size": 4,
+  "train_data_path": "./data/train/",
+  "validation_data_path": "./data/validation/",
+  "train_style_data_path": "./data/train_style/",
+  "validation_style_data_path": "./data/validation_style/",
+  "learning_rate": 1,
+  "batch_size": 1,
   "max_to_keep": 100,
   "summary_dir": "./summary/",
   "checkpoint_dir": "./checkpoint/",
   "dropout_probability": 0.0,
   "epohs_count": 100,
-  "logging_period": 100
+  "logging_period": 100,
+  "total_variation_weight": 1,
+  "style_weight": 1,
+  "content_weight": 1,
+  "residual_count": 5,
+  "num_iter_per_epoch": 100000
 }

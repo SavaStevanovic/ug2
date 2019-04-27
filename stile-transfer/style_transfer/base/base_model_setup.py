@@ -34,6 +34,3 @@ class BaseModelSetup:
         # DON'T forget to add the global step tensor to the tensorflow trainer
         with tf.variable_scope('global_step'):
             self.global_step_tensor = tf.Variable(0, trainable=False, name='global_step')
-
-    def build_model(self):
-        raise NotImplementedError

@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-from style_transfer.data_loader.data_loader import DataGenerator
 from style_transfer.model_setup.model_setup import ModelSetup
-from style_transfer.trainers.example_trainer import ExampleTrainer
+from style_transfer.iterators.trainer import Trainer
+from style_transfer.iterators.validatior import Validatior
 from style_transfer.utils.config import process_config
 from style_transfer.utils.dirs import create_dirs
 from style_transfer.utils.logger import Logger
@@ -15,9 +15,9 @@ def main():
     # capture the config path from the run arguments
     # then process the json configuration file
     try:
-        config = process_config("C:\\Pets\\configs\\config.json")
+        config = process_config("./configs/config.json")
 
-    except Exception as e:
+    except Exception as _:
         print("missing or invalid arguments")
         exit(0)
 
@@ -25,19 +25,18 @@ def main():
     create_dirs([config.summary_dir, config.checkpoint_dir])
     # create tensorflow session
     sess = tf.Session()
-    # create your data generator
-    data = DataGenerator(config)
-
     # create an instance of the model you want
     model = ModelSetup(config)
     # create tensorboard logger
     logger = Logger(sess, config)
     # create trainer and pass all the previous components to it
-    trainer = ExampleTrainer(sess, model, data, config, logger)
+    trainer = Trainer(sess, model, config, logger)
+    # validatior = Validatior(sess, model, config, logger)
     # load model if exists
     model.load(sess)
     for _ in range(config.epohs_count):
-        trainer.train_epoch()
+        trainer.iterate_epoch()
+        # validatior.iterate_epoch()
 
 
 if __name__ == '__main__':

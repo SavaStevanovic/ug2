@@ -3,14 +3,15 @@ from style_transfer.data_loader.data_loader import DataLoader
 
 
 class BaseIterator:
-    def __init__(self, sess, model, config, logger):
+    def __init__(self, sess, model, data_path, style_path, config, logger):
         self.model = model
         self.logger = logger
         self.config = config
         self.sess = sess
         self.init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
         self.sess.run(self.init)
-        self.handle = self.sess.run(DataLoader(config.train_data_path, config.batch_size).handle)
+        self.handle = self.sess.run(DataLoader(data_path, config.batch_size).handle)
+        self.style_handle = self.sess.run(DataLoader(style_path, config.batch_size).handle)
 
     def iterate_epoch(self):
         """
