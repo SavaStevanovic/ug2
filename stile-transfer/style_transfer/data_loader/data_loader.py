@@ -1,6 +1,7 @@
 import tensorflow as tf
 import os
 from keras.applications import vgg16
+import multiprocessing
 
 
 class DataLoader:
@@ -12,7 +13,7 @@ class DataLoader:
         self.path_ds = tf.data.Dataset.from_tensor_slices(self.images_paths)
         self.path_ds = self.path_ds.repeat()
         self.path_ds = self.path_ds.shuffle(buffer_size=len(self.images_paths))
-        self.path_ds = self.path_ds.map(self.load_and_preprocess_image)
+        self.path_ds = self.path_ds.map(self.load_and_preprocess_image, num_parallel_calls=multiprocessing.cpu_count())
         self.path_ds = self.path_ds.batch(batch_size)
         self.path_ds = self.path_ds.prefetch(buffer_size=1)
 

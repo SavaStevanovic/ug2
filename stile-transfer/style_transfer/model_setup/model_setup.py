@@ -23,10 +23,10 @@ class ModelSetup(BaseModelSetup):
         iterator = tf.data.Iterator.from_string_handle(self.handle, tf.float32, tf.TensorShape([None, self.img_nrows, self.img_ncols, 3]))
         style_iterator = tf.data.Iterator.from_string_handle(self.style_handle, tf.float32, tf.TensorShape([None, self.img_nrows, self.img_ncols, 3]))
         self.x = iterator.get_next()
-        generated_image = self.model.make_model(self.x)
-        generated_image_input = keras.layers.Input(tensor=generated_image)
-        base_image = keras.layers.Input(tensor=self.x)
-        style_reference_image = keras.layers.Input(tensor=style_iterator.get_next())
+        generated_image = self.model.make_model(self.x, self.is_training)
+        generated_image_input = generated_image
+        base_image = self.x
+        style_reference_image = style_iterator.get_next()
 
         # combine the 3 images into a single Keras tensor
         input_tensor = K.concatenate([base_image,
@@ -41,28 +41,40 @@ class ModelSetup(BaseModelSetup):
         print('Model loaded.')
 
         outputs_dict = dict([(layer.name, layer.output) for layer in model.layers])
-        self.loss = K.variable(0.0)
         layer_features = outputs_dict['block5_conv2']
         base_image_features = layer_features[0, :, :, :]
         combination_features = layer_features[2, :, :, :]
-        self.loss += self.config.content_weight * self.content_loss(base_image_features, combination_features)
+        self.c_loss = self.config.content_weight * self.content_loss(base_image_features, combination_features)
 
         feature_layers = ['block1_conv1', 'block2_conv1',
                           'block3_conv1', 'block4_conv1',
                           'block5_conv1']
+        self.s_loss = K.variable(0.0)
         for layer_name in feature_layers:
             layer_features = outputs_dict[layer_name]
             style_reference_features = layer_features[1, :, :, :]
             combination_features = layer_features[2, :, :, :]
             sl = self.style_loss(style_reference_features, combination_features)
-            self.loss += (self.config.style_weight / len(feature_layers)) * sl
-        self.loss += self.config.total_variation_weight * self.total_variation_loss(generated_image_input)
+            self.s_loss += (self.config.style_weight / len(feature_layers)) * sl
+        self.tv_loss = self.config.total_variation_weight * tf.math.reduce_sum(tf.image.total_variation(generated_image_input))
 
         train_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "network")
         [print(x) for x in train_vars]
-        self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.loss, global_step=self.global_step_tensor, var_list=train_vars)
+        self.train_op = tf.train.AdamOptimizer(self.config.learning_rate).minimize(self.c_loss+self.tv_loss+self.s_loss, global_step=self.global_step_tensor, var_list=train_vars)
 
         with tf.variable_scope("train_summaries"):
+            tf.summary.scalar(
+                'style_loss',
+                self.s_loss
+            )
+            tf.summary.scalar(
+                'tv_loss',
+                self.tv_loss
+            )
+            tf.summary.scalar(
+                'content_loss',
+                self.c_loss
+            )
             tf.summary.image(
                 'generated_image',
                 generated_image
@@ -80,7 +92,7 @@ class ModelSetup(BaseModelSetup):
 
             tf.summary.scalar(
                 'loss',
-                self.loss
+                self.c_loss+self.tv_loss+self.s_loss
             )
 
             self.train_summaries = tf.summary.merge_all(scope="train_summaries")

@@ -11,7 +11,7 @@ class Trainer(BaseIterator):
         loop = tqdm(range(self.config.num_iter_per_epoch))
         for i in loop:
             merged_summaries = self.iterate_step(self.handle, self.style_handle)
-            if i % self.config.logging_period:
+            if i % self.config.logging_period == 0:
                 cur_it = self.model.global_step_tensor.eval(self.sess)
                 self.logger.summarize(cur_it, merged_summaries)
         self.model.save(self.sess)
